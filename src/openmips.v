@@ -90,6 +90,14 @@ module openmips(
 	id id0(
 		.rst(rst),	.pc_i(id_pc_i),	.inst_i(id_inst_i),
 		
+		//处于访存阶段的指令要写入的目的寄存器信息
+		.mem_wdata_i(mem_wdata_o),	.mem_wd_i(mem_wd_o),
+		.mem_wreg_i(mem_wreg_o),
+		
+		//处于执行阶段的指令要写入的目的寄存器信息
+		.ex_wdata_i(ex_wdata_o),	.ex_wd_i(ex_wd_o),
+		.ex_wreg_i(ex_wreg_o),
+		
 		//来自Regfile模块的输兿
 		.reg1_data_i(reg1_data),	.reg2_data_i(reg2_data),
 		
