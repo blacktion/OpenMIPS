@@ -19,6 +19,13 @@
 ## 空指令
 ## * nop
 ## * ssnop
+## 移动操作指令
+## * movn
+## * movz
+## * mthi
+## * mtlo
+## * mfhi
+## * mflo
 ## 其它
 ## * sync
 ## * pref
