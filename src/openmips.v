@@ -15,7 +15,7 @@ module openmips(
 	
 	wire[`InstAddrBus] 	pc;
 	wire[`InstAddrBus] 	id_pc_i;
-	wire[`InstBus]		    id_inst_i;
+	wire[`InstBus]		id_inst_i;
 	
 //~~~~~ID-----ID/EX~~~~~~~
 
@@ -38,26 +38,38 @@ module openmips(
 //~~~~~EX-----EX/MEM~~~~~~
     
     wire                ex_wreg_o;
-    wire[`RegAddrBus] ex_wd_o;
-    wire[`RegBus]      ex_wdata_o;
+    wire[`RegAddrBus] 	ex_wd_o;
+    wire[`RegBus]      	ex_wdata_o;
+	wire[`RegBus] 		ex_hi_o;
+	wire[`RegBus] 		ex_lo_o;
+	wire 				ex_whilo_o;
     
 //~~~~~MEM-----MEM/WB~~~~~
     
 	wire				mem_wreg_i;
 	wire[`RegAddrBus]	mem_wd_i;
 	wire[`RegBus]		mem_wdata_i;
+	wire[`RegBus] 		mem_hi_i;
+	wire[`RegBus] 		mem_lo_i;
+	wire 				mem_whilo_i;
 	
 //~~~~~MEM-----MEM/WB~~~~~
 
 	wire				mem_wreg_o;
 	wire[`RegAddrBus]	mem_wd_o;
 	wire[`RegBus]		mem_wdata_o;
+	wire[`RegBus] 		mem_hi_o;
+	wire[`RegBus] 		mem_lo_o;
+	wire 				mem_whilo_o;
 	
 //~~~~~MEM/WB-----WB~~~~~~
 
 	wire				wb_wreg_i;
 	wire[`RegAddrBus]	wb_wd_i;
 	wire[`RegBus]		wb_wdata_i;
+	wire[`RegBus] 		wb_hi_i;
+	wire[`RegBus] 		wb_lo_i;
+	wire 				wb_whilo_i;
 	
 //~~~~~译码阶段ID-----Regfile
 
@@ -67,6 +79,11 @@ module openmips(
 	wire[`RegBus]		reg2_data;
 	wire[`RegAddrBus]	reg1_addr;
 	wire[`RegAddrBus]	reg2_addr;
+	
+//~~~~~hilo~~~~~~~~~~~~~~~~~~~
+
+	wire[`RegBus] 	hi;
+	wire[`RegBus]   lo;
 	
 // pc_reg例化
 
@@ -147,10 +164,18 @@ module openmips(
 		.aluop_i(ex_aluop_i),		.alusel_i(ex_alusel_i),
 		.reg1_i(ex_reg1_i),			.reg2_i(ex_reg2_i),
 		.wd_i(ex_wd_i),				.wreg_i(ex_wreg_i),
+		.hi_i(hi),					.lo_i(lo),
+		
+		.wb_hi_i(wb_hi_i),			.wb_lo_i(wb_lo_i),
+		.wb_whilo_i(wb_whilo_i),	.mem_hi_i(mem_hi_o),
+		.mem_lo_i(mem_lo_o),		.mem_whilo_i(mem_whilo_o),
 		
 		//输出到EX/MEM模块的信恿
 		.wd_o(ex_wd_o),				.wreg_o(ex_wreg_o),
-		.wdata_o(ex_wdata_o)
+		.wdata_o(ex_wdata_o),
+		
+		.hi_o(ex_hi_o),				.lo_o(ex_lo_o),
+		.whilo_o(ex_whilo_o)
 	);
 	
 // EX/MEM模块例化
@@ -160,11 +185,13 @@ module openmips(
 		
 		//来自执行阶段EX模块的信恿
 		.ex_wd(ex_wd_o),			.ex_wreg(ex_wreg_o),
-		.ex_wdata(ex_wdata_o),
+		.ex_wdata(ex_wdata_o),		.ex_hi(ex_hi_o),
+		.ex_lo(ex_lo_o),			.ex_whilo(ex_whilo_o),
 		
 		//送到访存阶段MEM模块的信恿
 		.mem_wd(mem_wd_i),			.mem_wreg(mem_wreg_i),
-		.mem_wdata(mem_wdata_i)
+		.mem_wdata(mem_wdata_i),	.mem_hi(mem_hi_i),
+		.mem_lo(mem_lo_i),			.mem_whilo(mem_whilo_i)	
 	);
 
 // MEM模块例化
@@ -174,11 +201,13 @@ module openmips(
 		
 		//来自EX/MEM模块的信恿
 		.wd_i(mem_wd_i),			.wreg_i(mem_wreg_i),
-		.wdata_i(mem_wdata_i),
+		.wdata_i(mem_wdata_i),		.hi_i(mem_hi_i),
+		.lo_i(mem_lo_i),			.whilo_i(mem_whilo_i),
 		
 		//送到MEM/WB模块的信恿
 		.wd_o(mem_wd_o),			.wreg_o(mem_wreg_o),
-		.wdata_o(mem_wdata_o)
+		.wdata_o(mem_wdata_o),		.hi_o(mem_hi_o),
+		.lo_o(mem_lo_o),			.whilo_o(mem_whilo_o)
 	);
 	
 // MEM/WB模块例化
@@ -188,11 +217,28 @@ module openmips(
 		
 		//来自访存阶段MEM模块的信恿
 		.mem_wd(mem_wd_o),			.mem_wreg(mem_wreg_o),
-		.mem_wdata(mem_wdata_o),
+		.mem_wdata(mem_wdata_o),	.mem_hi(mem_hi_o),
+		.mem_lo(mem_lo_o),			.mem_whilo(mem_whilo_o),
 		
 		//送到诙谐阶段的信恿
 		.wb_wd(wb_wd_i),			.wb_wreg(wb_wreg_i),
-		.wb_wdata(wb_wdata_i)
+		.wb_wdata(wb_wdata_i),		.wb_hi(wb_hi_i),
+		.wb_lo(wb_lo_i),			.wb_whilo(wb_whilo_i)
+	);
+	
+//hilo
+	hilo_reg hilo_reg0(
+		.clk(clk),
+		.rst(rst),
+	
+		//写端口
+		.we(wb_whilo_i),
+		.hi_i(wb_hi_i),
+		.lo_i(wb_lo_i),
+	
+		//读端口1
+		.hi_o(hi),
+		.lo_o(lo)	
 	);
 	
 endmodule
