@@ -10,6 +10,7 @@ module ex(
 	input wire[`RegBus]			reg2_i,
 	input wire[`RegAddrBus]		wd_i,
 	input wire					wreg_i,
+	input wire[`RegBus]           inst_i,
 	
 	//HILO?????hi?LO?????
 	input wire[`RegBus]			hi_i,
@@ -51,6 +52,10 @@ module ex(
 	output reg					div_start_o,
 	output reg					signed_div_o,
 	
+	output wire[`AluOpBus]        aluop_o,
+	output wire[`RegBus]          mem_addr_o,
+	output wire[`RegBus]          reg2_o,
+	
 	output reg					stallreq
 
 );
@@ -78,6 +83,14 @@ module ex(
 	reg					stallreq_for_madd_msub;
 	reg[`DoubleRegBus]	mulres;		//??????,???64?
 	
+	
+	assign aluop_o = aluop_i;
+  
+	//mem_addr???????,????????????????
+	assign mem_addr_o = reg1_i + {{16{inst_i[15]}},inst_i[15:0]};
+
+	//??????????????,?????????????
+	assign reg2_o = reg2_i;
 	
 /////////////////////////////////////
 	

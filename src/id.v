@@ -9,6 +9,8 @@ module id(
 	input wire[`RegBus]			reg1_data_i,
 	input wire[`RegBus]			reg2_data_i,
 	
+	input wire[`AluOpBus]					ex_aluop_i,
+	
 	//??????????????
 	input wire					ex_wreg_i,
 	input wire[`RegBus]			ex_wdata_i,
@@ -40,6 +42,8 @@ module id(
 	output reg[`RegBus]           link_addr_o,
 	output reg                    is_in_delayslot_o,
 	
+	output wire[`RegBus]          inst_o,
+	
 	output wire					stallreq
 	
 	//???????????1????2
@@ -48,24 +52,40 @@ module id(
 
 );
 
-wire[5:0] op = inst_i[31:26];
-wire[4:0] op2 = inst_i[10:6];
-wire[5:0] op3 = inst_i[5:0];
-wire[4:0] op4 = inst_i[20:16];
+	wire[5:0] op = inst_i[31:26];
+	wire[4:0] op2 = inst_i[10:6];
+	wire[5:0] op3 = inst_i[5:0];
+	wire[4:0] op4 = inst_i[20:16];
 
-reg[`RegBus]	imm;
+	reg[`RegBus]	imm;
 
-reg instvalid;
+	reg instvalid;
 
-wire[`RegBus] pc_plus_8;
-wire[`RegBus] pc_plus_4;
-wire[`RegBus] imm_sll2_signedext;  
-  
-assign pc_plus_8 = pc_i + 8;
-assign pc_plus_4 = pc_i +4;
-assign imm_sll2_signedext = {{14{inst_i[15]}}, inst_i[15:0], 2'b00 };
+	wire[`RegBus] pc_plus_8;
+	wire[`RegBus] pc_plus_4;
+	wire[`RegBus] imm_sll2_signedext;  
+	
+	reg stallreq_for_reg1_loadrelate;
+	reg stallreq_for_reg2_loadrelate;
+	wire pre_inst_is_load;
+	  
+	assign pc_plus_8 = pc_i + 8;
+	assign pc_plus_4 = pc_i +4;
+	assign imm_sll2_signedext = {{14{inst_i[15]}}, inst_i[15:0], 2'b00 };
 
-assign stallreq = `NoStop;
+	assign stallreq = stallreq_for_reg1_loadrelate | stallreq_for_reg2_loadrelate;
+	assign pre_inst_is_load = ((ex_aluop_i == `EXE_LB_OP) || 
+  													(ex_aluop_i == `EXE_LBU_OP)||
+  													(ex_aluop_i == `EXE_LH_OP) ||
+  													(ex_aluop_i == `EXE_LHU_OP)||
+  													(ex_aluop_i == `EXE_LW_OP) ||
+  													(ex_aluop_i == `EXE_LWR_OP)||
+  													(ex_aluop_i == `EXE_LWL_OP)||
+  													(ex_aluop_i == `EXE_LL_OP) ||
+  													(ex_aluop_i == `EXE_SC_OP)) ? 1'b1 : 1'b0;
+
+
+  assign inst_o = inst_i;
 
 //~~~~~~~~~~~“Î¬Î~~~~~~~~~~~
 
@@ -492,6 +512,77 @@ assign stallreq = `NoStop;
 						next_inst_in_delayslot_o <= `InDelaySlot;		  	
 					end
 				end
+				`EXE_LB:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_LB_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b0;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+				end
+				`EXE_LBU:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_LBU_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b0;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+				end
+				`EXE_LH:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_LH_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b0;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+				end
+				`EXE_LHU:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_LHU_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b0;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+				end
+				`EXE_LW:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_LW_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b0;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+				end
+				`EXE_LL:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_LL_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b0;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+				end
+				`EXE_LWL:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_LWL_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b1;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+				end
+				`EXE_LWR:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_LWR_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b1;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+				end			
+				`EXE_SB:			begin
+		  		wreg_o <= `WriteDisable;		aluop_o <= `EXE_SB_OP;
+		  		reg1_read_o <= 1'b1;	reg2_read_o <= 1'b1; instvalid <= `InstValid;	
+		  		alusel_o <= `EXE_RES_LOAD_STORE; 
+				end
+				`EXE_SH:			begin
+		  		wreg_o <= `WriteDisable;		aluop_o <= `EXE_SH_OP;
+		  		reg1_read_o <= 1'b1;	reg2_read_o <= 1'b1; instvalid <= `InstValid;	
+		  		alusel_o <= `EXE_RES_LOAD_STORE; 
+				end
+				`EXE_SW:			begin
+		  		wreg_o <= `WriteDisable;		aluop_o <= `EXE_SW_OP;
+		  		reg1_read_o <= 1'b1;	reg2_read_o <= 1'b1; instvalid <= `InstValid;	
+		  		alusel_o <= `EXE_RES_LOAD_STORE; 
+				end
+				`EXE_SWL:			begin
+		  		wreg_o <= `WriteDisable;		aluop_o <= `EXE_SWL_OP;
+		  		reg1_read_o <= 1'b1;	reg2_read_o <= 1'b1; instvalid <= `InstValid;	
+		  		alusel_o <= `EXE_RES_LOAD_STORE; 
+				end
+				`EXE_SWR:			begin
+		  		wreg_o <= `WriteDisable;		aluop_o <= `EXE_SWR_OP;
+		  		reg1_read_o <= 1'b1;	reg2_read_o <= 1'b1; instvalid <= `InstValid;	
+		  		alusel_o <= `EXE_RES_LOAD_STORE; 
+				end
+				`EXE_SC:			begin
+		  		wreg_o <= `WriteEnable;		aluop_o <= `EXE_SC_OP;
+		  		alusel_o <= `EXE_RES_LOAD_STORE; reg1_read_o <= 1'b1;	reg2_read_o <= 1'b1;	  	
+					wd_o <= inst_i[20:16]; instvalid <= `InstValid;	
+					alusel_o <= `EXE_RES_LOAD_STORE; 
+				end
 				`EXE_REGIMM_INST:	begin
 					case (op4)
 						`EXE_BGEZ:		begin
@@ -508,7 +599,7 @@ assign stallreq = `NoStop;
 							end
 						end
 						`EXE_BGEZAL:	begin
-							wreg_o <= `WriteEnable;		
+									
 							aluop_o <= `EXE_BGEZAL_OP;
 							alusel_o <= `EXE_RES_JUMP_BRANCH; 
 							reg1_read_o <= 1'b1;	
@@ -517,6 +608,7 @@ assign stallreq = `NoStop;
 							wd_o <= 5'b11111;  	
 							instvalid <= `InstValid;
 							if(reg1_o[31] == 1'b0) begin
+							     wreg_o <= `WriteEnable;
 								branch_target_address_o <= pc_plus_4 + imm_sll2_signedext;
 								branch_flag_o <= `Branch;
 								next_inst_in_delayslot_o <= `InDelaySlot;
@@ -536,7 +628,7 @@ assign stallreq = `NoStop;
 							end
 						end
 						`EXE_BLTZAL:	begin
-							wreg_o <= `WriteEnable;		
+								
 							aluop_o <= `EXE_BLTZAL_OP;
 							alusel_o <= `EXE_RES_JUMP_BRANCH; 
 							reg1_read_o <= 1'b1;	
@@ -544,6 +636,7 @@ assign stallreq = `NoStop;
 							link_addr_o <= pc_plus_8;	
 							wd_o <= 5'b11111; instvalid <= `InstValid;
 							if(reg1_o[31] == 1'b1) begin
+							     wreg_o <= `WriteEnable;	
 								branch_target_address_o <= pc_plus_4 + imm_sll2_signedext;
 								branch_flag_o <= `Branch;
 								next_inst_in_delayslot_o <= `InDelaySlot;
@@ -656,53 +749,47 @@ assign stallreq = `NoStop;
 //~~~~~~~~~~operation 1~~~~~~~~~~~
 
 	always @ (*) begin
+			stallreq_for_reg1_loadrelate <= `NoStop;	
 		if(rst == `RstEnable) begin
-			reg1_o <= `ZeroWord;
-		
-		//????reg1_o??????
-		//??Regfile?????1?????????????????????,
-		//????????????ex_wdata_i??reg1_o??
-		//??Regfile?????1?????????????????????,
-		//????????????mem_wdata_i??reg1_o??
-		end else if((reg1_read_o == 1'b1) && (ex_wreg_i == 1'b1)
-			&& (ex_wd_i == reg1_addr_o)) begin
-			reg1_o <= ex_wdata_i;
-		end else if((reg1_read_o == 1'b1) && (mem_wreg_i == 1'b1)
-			&& (mem_wd_i == reg1_addr_o)) begin
-			reg1_o <= mem_wdata_i;
-		
-		
-		end else if(reg1_read_o == 1'b1) begin
-			reg1_o <= reg1_data_i;
-		end else if(reg1_read_o == 1'b0) begin
-			reg1_o <= imm;
-		end else begin
-			reg1_o <= `ZeroWord;
-		end
+			reg1_o <= `ZeroWord;	
+		end else if(pre_inst_is_load == 1'b1 && ex_wd_i == reg1_addr_o 
+								&& reg1_read_o == 1'b1 ) begin
+		  stallreq_for_reg1_loadrelate <= `Stop;							
+		end else if((reg1_read_o == 1'b1) && (ex_wreg_i == 1'b1) 
+								&& (ex_wd_i == reg1_addr_o)) begin
+			reg1_o <= ex_wdata_i; 
+		end else if((reg1_read_o == 1'b1) && (mem_wreg_i == 1'b1) 
+								&& (mem_wd_i == reg1_addr_o)) begin
+			reg1_o <= mem_wdata_i; 			
+	  end else if(reg1_read_o == 1'b1) begin
+	  	reg1_o <= reg1_data_i;
+	  end else if(reg1_read_o == 1'b0) begin
+	  	reg1_o <= imm;
+	  end else begin
+	    reg1_o <= `ZeroWord;
+	  end
 	end
-
-//~~~~~~~~~~operation 2~~~~~~~~~~~
-
+	
 	always @ (*) begin
+			stallreq_for_reg2_loadrelate <= `NoStop;
 		if(rst == `RstEnable) begin
 			reg2_o <= `ZeroWord;
-			
-			
-		end else if((reg2_read_o == 1'b1) && (ex_wreg_i == 1'b1)
-			&& (ex_wd_i == reg2_addr_o)) begin
-			reg2_o <= ex_wdata_i;
-		end else if((reg2_read_o == 1'b1) && (mem_wreg_i == 1'b1)
-			&& (mem_wd_i == reg2_addr_o)) begin
-			reg2_o <= mem_wdata_i;	
-			
-			
-		end else if(reg2_read_o == 1'b1) begin
-			reg2_o <= reg2_data_i;
-		end else if(reg2_read_o == 1'b0) begin
-			reg2_o <= imm;
-		end else begin
-			reg2_o <= `ZeroWord;
-		end
+		end else if(pre_inst_is_load == 1'b1 && ex_wd_i == reg2_addr_o 
+								&& reg2_read_o == 1'b1 ) begin
+		  stallreq_for_reg2_loadrelate <= `Stop;			
+		end else if((reg2_read_o == 1'b1) && (ex_wreg_i == 1'b1) 
+								&& (ex_wd_i == reg2_addr_o)) begin
+			reg2_o <= ex_wdata_i; 
+		end else if((reg2_read_o == 1'b1) && (mem_wreg_i == 1'b1) 
+								&& (mem_wd_i == reg2_addr_o)) begin
+			reg2_o <= mem_wdata_i;			
+	  end else if(reg2_read_o == 1'b1) begin
+	  	reg2_o <= reg2_data_i;
+	  end else if(reg2_read_o == 1'b0) begin
+	  	reg2_o <= imm;
+	  end else begin
+	    reg2_o <= `ZeroWord;
+	  end
 	end
 //
 
