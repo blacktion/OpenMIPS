@@ -26,6 +26,11 @@
 ## * mtlo
 ## * mfhi
 ## * mflo
+## 算术操作指令
+## add , addu , sub , subu , slt , sltu
+## addi , addiu , slti , sltiu
+## clo , clz
+## multu , mult , mul
 ## 其它
 ## * sync
 ## * pref
