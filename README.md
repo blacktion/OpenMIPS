@@ -31,6 +31,9 @@
 ## addi , addiu , slti , sltiu
 ## clo , clz
 ## multu , mult , mul
+## 累加、累乘指令
+## madd , maddu
+## msub , msubu
 ## 其它
 ## * sync
 ## * pref
