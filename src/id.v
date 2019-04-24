@@ -189,13 +189,75 @@ reg instvalid;
 										wreg_o	<= `WriteDisable;
 									end
 								end
+								`EXE_SLT:	begin
+									wreg_o		<= `WriteEnable;
+									aluop_o		<= `EXE_SLT_OP;
+									alusel_o	<= `EXE_RES_ARITHMETIC;
+									reg1_read_o	<= 1'b1;
+									reg2_read_o	<= 1'b1;
+									instvalid	<= `InstValid;
+								end
+								`EXE_SLTU:	begin
+									wreg_o		<= `WriteEnable;
+									aluop_o		<= `EXE_SLTU_OP;
+									alusel_o	<= `EXE_RES_ARITHMETIC;
+									reg1_read_o	<= 1'b1;
+									reg2_read_o	<= 1'b1;
+									instvalid	<= `InstValid;
+								end
+								`EXE_ADD:	begin
+									wreg_o		<= `WriteEnable;
+									aluop_o		<= `EXE_ADD_OP;
+									alusel_o	<= `EXE_RES_ARITHMETIC;
+									reg1_read_o	<= 1'b1;
+									reg2_read_o	<= 1'b1;
+									instvalid	<= `InstValid;
+								end
+								`EXE_ADDU:	begin
+									wreg_o		<= `WriteEnable;
+									aluop_o		<= `EXE_ADDU_OP;
+									alusel_o	<= `EXE_RES_ARITHMETIC;
+									reg1_read_o	<= 1'b1;
+									reg2_read_o	<= 1'b1;
+									instvalid	<= `InstValid;
+								end
+								`EXE_SUB:	begin
+									wreg_o		<= `WriteEnable;
+									aluop_o		<= `EXE_SUB_OP;
+									alusel_o	<= `EXE_RES_ARITHMETIC;
+									reg1_read_o	<= 1'b1;
+									reg2_read_o	<= 1'b1;
+									instvalid	<= `InstValid;
+								end
+								`EXE_SUBU:	begin
+									wreg_o		<= `WriteEnable;
+									aluop_o		<= `EXE_SUBU_OP;
+									alusel_o	<= `EXE_RES_ARITHMETIC;
+									reg1_read_o	<= 1'b1;
+									reg2_read_o	<= 1'b1;
+									instvalid	<= `InstValid;
+								end
+								`EXE_MULT:	begin
+									wreg_o		<= `WriteDisable;
+									aluop_o		<= `EXE_MULT_OP;
+									reg1_read_o	<= 1'b1;
+									reg2_read_o	<= 1'b1;
+									instvalid	<= `InstValid;
+								end
+								`EXE_MULTU:	begin
+									wreg_o		<= `WriteDisable;
+									aluop_o		<= `EXE_MULTU_OP;
+									reg1_read_o	<= 1'b1;
+									reg2_read_o	<= 1'b1;
+									instvalid	<= `InstValid;
+								end
 								default:	begin
 								end
-							endcase
+							endcase	//end case op3
 						end
 						default:	begin
 						end
-					endcase
+					endcase			//end case op2
 				end
 				`EXE_ORI:	begin				//ORI
 					wreg_o 		<= `WriteEnable;
@@ -245,9 +307,79 @@ reg instvalid;
 					reg2_read_o	<= 1'b0;
 					instvalid	<= `InstValid;
 				end
+				`EXE_SLTI:	begin				//stli
+					wreg_o		<= `WriteEnable;
+					aluop_o		<= `EXE_SLT_OP;
+					alusel_o	<= `EXE_RES_ARITHMETIC;
+					reg1_read_o	<= 1'b1;
+					reg2_read_o	<= 1'b0;
+					imm			<= {{16{inst_i[15]}}, inst_i[15:0]};
+					wd_o		<= inst_i[20:16];
+					instvalid	<= `InstValid;
+				end
+				`EXE_SLTIU:	begin				//sltiu
+					wreg_o		<= `WriteEnable;
+					aluop_o		<= `EXE_SLTU_OP;
+					alusel_o	<= `EXE_RES_ARITHMETIC;
+					reg1_read_o	<= 1'b1;
+					reg2_read_o	<= 1'b0;
+					imm			<= {{16{inst_i[15]}}, inst_i[15:0]};
+					wd_o		<= inst_i[20:16];
+					instvalid	<= `InstValid;
+				end
+				`EXE_ADDI:	begin				//addi
+					wreg_o		<= `WriteEnable;
+					aluop_o		<= `EXE_ADDI_OP;
+					alusel_o	<= `EXE_RES_ARITHMETIC;
+					reg1_read_o	<= 1'b1;
+					reg2_read_o	<= 1'b0;
+					imm			<= {{16{inst_i[15]}}, inst_i[15:0]};
+					wd_o		<= inst_i[20:16];
+					instvalid	<= `InstValid;
+				end
+				`EXE_ADDIU:	begin				//addiu
+					wreg_o		<= `WriteEnable;
+					aluop_o		<= `EXE_ADDIU_OP;
+					alusel_o	<= `EXE_RES_ARITHMETIC;
+					reg1_read_o	<= 1'b1;
+					reg2_read_o	<= 1'b0;
+					imm			<= {{16{inst_i[15]}}, inst_i[15:0]};
+					wd_o		<= inst_i[20:16];
+					instvalid	<= `InstValid;
+				end
+				`EXE_SPECIAL2_INST:	begin
+					case(op3)
+						`EXE_CLZ:	begin		//clz
+							wreg_o		<= `WriteEnable;
+							aluop_o		<= `EXE_CLZ_OP;
+							alusel_o	<= `EXE_RES_ARITHMETIC;
+							reg1_read_o	<= 1'b1;
+							reg2_read_o	<= 1'b0;
+							instvalid	<= `InstValid;
+						end
+						`EXE_CLO:	begin		//clo
+							wreg_o		<= `WriteEnable;
+							aluop_o		<= `EXE_CLO_OP;
+							alusel_o	<= `EXE_RES_ARITHMETIC;
+							reg1_read_o	<= 1'b1;
+							reg2_read_o	<= 1'b0;
+							instvalid	<= `InstValid;
+						end
+						`EXE_MUL:	begin		//mul
+							wreg_o		<= `WriteEnable;
+							aluop_o		<= `EXE_MUL_OP;
+							alusel_o	<= `EXE_RES_MUL;
+							reg1_read_o	<= 1'b1;
+							reg2_read_o	<= 1'b1;
+							instvalid	<= `InstValid;
+						end
+						default:	begin
+						end
+					endcase 	//EXE_SPECIAL2_INST case
+				end
 				default:begin
 				end
-			endcase
+			endcase		//case op
 			
 			if(inst_i[31:21] == 11'b00000000000) begin
 				if(op3 == `EXE_SLL) begin
